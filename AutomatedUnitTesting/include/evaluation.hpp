@@ -12,8 +12,10 @@ template<auto values>
 constexpr auto remove_duplicates() {
     constexpr auto new_sz = [] {
         auto v_new = values;
-        constexpr auto new_end_it = std::unique(v_new.begin(), v_new.end());
-        return std::distance(v_new.cbegin(), new_end_it);
+        auto v_begin = v_new.begin();
+        auto v_end = v_new.end();
+        constexpr auto new_end_it = std::unique(v_begin, v_end);
+        return std::distance(v_new.begin(), new_end_it);
     }();
 
     std::array<typename decltype(values)::value_type, new_sz> unified{};
@@ -129,7 +131,7 @@ struct evaluate<_and<A, B>> {
 
 template<typename A, typename B>
 struct evaluate<_or<A, B>> {
-    static constexpr auto valid_border_values = border_value_union<A, B>();
+    static constexpr auto valid_border_values = remove_duplicates<border_value_union<A, B>()>();
 };
 
 }
