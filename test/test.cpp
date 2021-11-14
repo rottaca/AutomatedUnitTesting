@@ -7,6 +7,7 @@
 #include "constraints.hpp"
 #include "constraint_combiner.hpp"
 #include "evaluation.hpp"
+#include "testgenerator.hpp"
 #include "helper.hpp"
 
 
@@ -191,11 +192,17 @@ int main()
 	}
 
 	{
-		aut::_or<aut::greater<1>, aut::one_of<-1, 1, 5, 3>> b{ 16 };
+		aut::_or<aut::greater<1>, aut::one_of<-1, 1, 2, 5, 3>> b{ 16 };
 		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
 		std::array<int, 5> exp = {2, -1, 1, 5, 3 };
 		assert(bw == exp);
 	}
 
+	{
+		//aut::error_print<decltype(fib)>{};
+		//aut::error_print_val<fib>{};
+
+		aut::generate_tests<fib>();
+	}
 	return 0;
 }

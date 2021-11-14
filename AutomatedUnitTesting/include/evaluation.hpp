@@ -7,15 +7,23 @@
 
 namespace aut {
 
-// TODO
 template<auto values>
 constexpr auto remove_duplicates() {
     constexpr auto new_sz = [] {
-        auto v_new = values;
-        auto v_begin = v_new.begin();
-        auto v_end = v_new.end();
-        constexpr auto new_end_it = std::unique(v_begin, v_end);
-        return std::distance(v_new.begin(), new_end_it);
+        size_t sz = 0;
+        for (size_t i = 0; i < std::size(values); i++)
+        {
+            bool duplicate = false;
+            for (size_t j = 0; j < i; j++)
+            {
+                if (values[i] == values[j]) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) sz++;
+        }
+        return sz;
     }();
 
     std::array<typename decltype(values)::value_type, new_sz> unified{};
@@ -126,7 +134,7 @@ struct evaluate<one_of<Option0, Options...>> {
 
 template<typename A, typename B>
 struct evaluate<_and<A, B>> {
-    static constexpr auto valid_border_values = border_value_intersect<A, B>();
+    static constexpr auto valid_border_values = remove_duplicates<border_value_intersect<A, B>()>();
 };
 
 template<typename A, typename B>
