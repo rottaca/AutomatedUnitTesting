@@ -27,7 +27,7 @@ namespace aut {
 
         constexpr constraint_proxy(const T& t) noexcept(std::is_nothrow_constructible_v<T>) : m_t(t) {}
         constraint_proxy() noexcept(std::is_nothrow_constructible_v<T>) = default;
-        ~constraint_proxy() = default;
+        virtual ~constraint_proxy() = default;
 
         constraint_proxy(constraint_proxy<T>&& other) noexcept(std::is_nothrow_move_constructible_v<T>) = default;
         constraint_proxy<T>& operator=(constraint_proxy<T>&& other) noexcept(std::is_nothrow_move_assignable_v<T>) = default;
@@ -63,7 +63,6 @@ namespace aut {
 
         T m_t;
     };
-
 
 template<typename T2, typename U2, template <typename> class OP>
 constexpr inline auto op_wrapper(const T2& lhs, const U2& rhs) {

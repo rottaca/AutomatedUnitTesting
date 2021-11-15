@@ -53,10 +53,12 @@ int main()
 {
 	{
 		aut::constraint_proxy s0{ 10.0 };
+		//std::cout << s0 << std::endl;
 	}
 
 	{
 		aut::in_range<0.f, 10.f> s1 = 5.f;
+		//std::cout << s1 << std::endl;
 	}
 
 	{
@@ -65,6 +67,9 @@ int main()
 	
 		auto res = s3 + s2;
 		assert(res == 4);
+		//std::cout << s2 << std::endl;
+		//std::cout << s3 << std::endl;
+		//std::cout << res << std::endl;
 	}
 
 	{
@@ -89,6 +94,7 @@ int main()
 		aut::less_eq<10> d{ 2 };
 		aut::greater_eq<10> e{ 2 };
 		aut::one_of<0, 1, 54, 2> f{ 1 };
+		//std::cout << f << std::endl;
 	}
 
 	{
@@ -202,7 +208,7 @@ int main()
 		//aut::error_print<decltype(fib)>{};
 		//aut::error_print_val<fib>{};
 
-		aut::generate_tests<fib>();
+		aut::test_func<fib>();
 	}
 	return 0;
 }
