@@ -28,8 +28,22 @@ aut::greater<0, int> fib(aut::greater<0, int> n) {
 	return f2;
 }
 
-aut::greater<0, int> myFunc(aut::greater<0, int> n, aut::in_range<-10.f, 10.f, float> m) {
+aut::greater<0.f, float> myFunc(aut::greater<0.f, float> n, aut::in_range<-10.f, 10.f, float> m) {
+	std::cout << "n: " << n << std::endl;
+	std::cout << "m: " << m << std::endl;
+
 	return n * m;
+}
+
+aut::greater<0.f, float> myFunc2(
+	aut::greater<0.f, float> n, 
+	aut::in_range<-10.f, 10.f, float> m, 
+	aut::one_of<1,2,-1,3> o) {
+	std::cout << "n: " << n << std::endl;
+	std::cout << "m: " << m << std::endl;
+	std::cout << "o: " << o << std::endl;
+
+	return n * m * static_cast<float>(o);
 }
 
 void BubbleSort(std::vector<aut::in_range<0, 100, int>>& arr)
@@ -209,7 +223,7 @@ int main()
 	}
 
 	{
-		aut::test_func<myFunc>();
+		aut::test_func<myFunc2>();
 	}
 	return 0;
 }

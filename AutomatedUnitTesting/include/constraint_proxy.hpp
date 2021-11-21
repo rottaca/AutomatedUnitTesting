@@ -26,8 +26,7 @@ namespace aut {
         using value_type = std::remove_cvref_t<T>;
 
         constexpr constraint_proxy(const T& t) noexcept(std::is_nothrow_constructible_v<T>) : m_t(t) {}
-        constraint_proxy() noexcept(std::is_nothrow_constructible_v<T>) = default;
-        virtual ~constraint_proxy() = default;
+        constraint_proxy() = delete;
 
         constraint_proxy(constraint_proxy<T>&& other) noexcept(std::is_nothrow_move_constructible_v<T>) = default;
         constraint_proxy<T>& operator=(constraint_proxy<T>&& other) noexcept(std::is_nothrow_move_assignable_v<T>) = default;

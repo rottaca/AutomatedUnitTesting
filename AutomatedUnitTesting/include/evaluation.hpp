@@ -64,7 +64,7 @@ template<typename A, typename B> requires is_constrained<A>&& is_constrained<B>
         constexpr auto values_a = evaluate<A>::valid_border_values;
         constexpr auto values_b = evaluate<B>::valid_border_values;
 
-        constexpr size_t cnt = [values_a, values_b]() {
+        constexpr auto cnt = [values_a, values_b]() constexpr {
             size_t sz = 0;
             for (const auto va : values_a) {
                 if (!A{ va }.is_valid()) continue;
@@ -140,13 +140,13 @@ struct evaluate<one_of<Option0, Options...>> {
 
 template<typename A, typename B>
 struct evaluate<_and<A, B>> {
-    using value_type = A::value_type;
+    using value_type = typename A::value_type;
     static constexpr auto valid_border_values = remove_duplicates<border_value_intersect<A, B>()>();
 };
 
 template<typename A, typename B>
 struct evaluate<_or<A, B>> {
-    using value_type = A::value_type;
+    using value_type = typename A::value_type;
     static constexpr auto valid_border_values = remove_duplicates<border_value_union<A, B>()>();
 };
 
