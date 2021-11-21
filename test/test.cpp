@@ -28,6 +28,10 @@ aut::greater<0, int> fib(aut::greater<0, int> n) {
 	return f2;
 }
 
+aut::greater<0, int> myFunc(aut::greater<0, int> n, aut::in_range<-10.f, 10.f, float> m) {
+	return n * m;
+}
+
 void BubbleSort(std::vector<aut::in_range<0, 100, int>>& arr)
 {
 	const size_t n = arr.size();
@@ -205,10 +209,7 @@ int main()
 	}
 
 	{
-		//aut::error_print<decltype(fib)>{};
-		//aut::error_print_val<fib>{};
-
-		aut::test_func<fib>();
+		aut::test_func<myFunc>();
 	}
 	return 0;
 }

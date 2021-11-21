@@ -25,23 +25,55 @@ template<typename RetType, typename ... Args>
 get_func_def(RetType(*)(Args...))->get_func_def<RetType(Args...)>;
 
 
-template<typename ... Args>
-struct create_test_instances {};
-
-template<typename Arg0, typename ... Args>
-struct create_test_instances<Arg0, Args...> {
-    //static const std::tuple<> args = { evaluate<Args>::valid_border_values[0] };
+template<auto func, typename ... Args>
+struct create_test_instances {
+    static constexpr std::tuple<decltype(evaluate<Args>::valid_border_values)...> arg_value_candidates = std::make_tuple(evaluate<Args>::valid_border_values ... );
+    //static const std::vector<std::tuple<Args...>> test_args = std::make_tuple(Args...);
 };
 
-template<typename Arg0>
-struct create_test_instances<Arg0> {
-    static const std::tuple<Arg0> args = { evaluate<Arg0>::valid_border_values[0] };
-};
 
 template<typename ...Args>
 void printer(Args&&... args) {
     (std::cout << ... << args) << std::endl;
 }
+
+template<typename ...T, auto ...Sz>
+void printer(std::array<T, Sz>... args) {
+    constexpr auto f = [](auto arr) {
+        for (auto v : arr) {
+            std::cout << v << ", ";
+        }
+        std::cout << std::endl;
+    };
+    
+    (f(args),...);
+}
+
+template<typename ...T, size_t... Is>
+void printTupleImpl(const std::tuple<T...>& tuple, std::index_sequence<Is...>) {
+    ((std::cout << "Arg " << Is << ": ", printer(std::get<Is>(tuple))), ...);
+}
+
+template<typename ...T>
+void printTuple(const std::tuple<T...>& tuple) {
+    printTupleImpl(tuple, std::make_index_sequence<sizeof...(T)>{});
+}
+
+
+
+template<auto func, typename ...T, size_t... Is>
+void instantiate_tests(const std::tuple<T...>& tuple, std::index_sequence<Is...>) {
+
+
+
+    ((std::cout << "Arg " << Is << ": ", printer(std::get<Is>(tuple))), ...);
+}
+
+template<auto func, typename ...T>
+void instantiate_tests(const std::tuple<T...>& tuple) {
+    printTupleImpl(tuple, std::make_index_sequence<sizeof...(T)>{});
+}
+
 
 template<auto func, typename RetType, typename T>
 struct gen_testcases;
@@ -49,15 +81,15 @@ struct gen_testcases;
 template<auto func, typename RetType, template<typename...> typename C, typename... Args>
 struct gen_testcases<func, RetType, C<Args...>> {
     gen_testcases() {
-        
-        //const auto res = std::apply([](auto&&... args) {return func((evaluate<args>::valid_border_values[0] << ...)); }, Args{});
+        static constexpr auto arg_value_candidates = std::make_tuple(evaluate<Args>::valid_border_values ...);
 
-        std::cout << "inputs: " << std::endl;
-        printer(Args{ evaluate<Args>::valid_border_values[0] } ...);
+        std::cout << "Valid border values per argument: " << std::endl;
+        printTuple(arg_value_candidates);
 
-        auto const result = func(Args{ evaluate<Args>::valid_border_values[0] } ...);
+        instantiate_tests<func>(arg_value_candidates);
 
-        //std::cout << "input: " << evaluate<Arg0>::valid_border_values[0] << (evaluate<Args>::valid_border_values[0] << ...) << std::endl;
+        //auto const result = func(Args{ evaluate<Args>::valid_border_values[0] } ...);
+
         std::cout << "output:" << std::endl;
         std::cout << result << std::endl;
     }

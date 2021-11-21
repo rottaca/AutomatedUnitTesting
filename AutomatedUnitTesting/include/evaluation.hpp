@@ -104,41 +104,49 @@ struct evaluate {
 
 template<auto THRESHOLD, typename T>
 struct evaluate<less<THRESHOLD, T>> {
+    using value_type = T;
     static constexpr std::array<T, 1> valid_border_values { THRESHOLD  - 1 };
 };
 
 template<auto THRESHOLD, typename T>
 struct evaluate<greater<THRESHOLD, T>> {
+    using value_type = T;
     static constexpr std::array<T, 1> valid_border_values { THRESHOLD +1 };
 };
 
 template<auto THRESHOLD, typename T>
 struct evaluate<greater_eq<THRESHOLD, T>> {
+    using value_type = T;
     static constexpr std::array<T, 1> valid_border_values { THRESHOLD };
 };
 
 template<auto THRESHOLD, typename T>
 struct evaluate<less_eq<THRESHOLD, T>> {
+    using value_type = T;
     static constexpr std::array<T, 1> valid_border_values { THRESHOLD };
 };
 
 template<auto MIN, auto MAX, typename T>
 struct evaluate<in_range<MIN, MAX, T>> {
-    static constexpr std::array<T, 2> valid_border_values { MIN - 1, MAX + 1 };
+    using value_type = T;
+    static constexpr std::array<T, 2> valid_border_values { MIN, MAX };
 };
 
 template<auto Option0, auto ... Options>
 struct evaluate<one_of<Option0, Options...>> {
+    using value_type = decltype(Option0);
     static constexpr std::array<decltype(Option0), (1+sizeof...(Options))> valid_border_values { Option0, Options... };
 };
 
 template<typename A, typename B>
 struct evaluate<_and<A, B>> {
+    using value_type = A::value_type;
     static constexpr auto valid_border_values = remove_duplicates<border_value_intersect<A, B>()>();
 };
 
 template<typename A, typename B>
 struct evaluate<_or<A, B>> {
+    using value_type = A::value_type;
     static constexpr auto valid_border_values = remove_duplicates<border_value_union<A, B>()>();
 };
 
