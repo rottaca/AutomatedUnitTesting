@@ -36,13 +36,13 @@ aut::greater<0.f, float> myFunc(aut::greater<0.f, float> n, aut::in_range<-10.f,
 }
 
 aut::greater<0.f, float> myFunc2(
-	aut::greater<0.f, float> n, 
-	aut::in_range<-10.f, 10.f, float> m, 
-	aut::one_of<1,2,-1,3> o) {
-	std::cout << "n: " << n << std::endl;
-	std::cout << "m: " << m << std::endl;
-	std::cout << "o: " << o << std::endl;
+	aut::greater<0.f, float> n,
+	aut::in_range<-10.f, 10.f, float> m,
+	aut::one_of<1, 2, -1, 3> o) {
+	return n * m * static_cast<float>(o);
+}
 
+float myFunc2_unconstrained(float n, float m, float o) {
 	return n * m * static_cast<float>(o);
 }
 
@@ -224,6 +224,11 @@ int main()
 
 	{
 		aut::test_func<myFunc2>();
+	}
+
+	{
+		aut::measure_runtime([]() {return myFunc2(1, 2, 3); });
+		aut::measure_runtime([]() {return myFunc2_unconstrained(1, 2, 3); });
 	}
 	return 0;
 }
