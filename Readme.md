@@ -44,3 +44,10 @@ int main() {
     aut::test_func<fib>();
 }
 ```
+
+Tests can be generated for:
+
+- Global functions
+- Lambda functions and other functors
+- Static class member functions
+- **TODO:** Member functions

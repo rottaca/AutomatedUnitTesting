@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <type_traits>
 
+#include <gtest/gtest.h>
+
 #include "constraints.hpp"
 #include "constraint_combiner.hpp"
 #include "evaluation.hpp"
@@ -17,7 +19,7 @@ aut::greater<0, int> fib(aut::greater<0, int> n) {
 	if (n <= 0) return 0;
 	if (n == 1) return 1;
 
-	int f1 = 1; // Bem.: f0 = 0
+	int f1 = 1;
 	int f2 = 1;
 	for (int i = 2; i < n; ++i)
 	{
@@ -67,168 +69,216 @@ void BubbleSort(std::vector<aut::in_range<0, 100, int>>& arr)
 	}
 }
 
-int main()
-{
+
+TEST(Constraints, BaseClass) {
+	aut::constraint_proxy s0{ 10.0 };
+}
+
+TEST(Constraints, BasicsInt) {
+	aut::in_range<0, 10> a{ 11 };
+	aut::less<10> b{ 2 };
+	aut::greater<10> c{ 2 };
+	aut::less_eq<10> d{ 2 };
+	aut::greater_eq<10> e{ 2 };
+	aut::one_of<0, 1, 54, 2> f{ 1 };
+
+	EXPECT_FALSE(a.is_valid());
+	EXPECT_TRUE(b.is_valid());
+	EXPECT_FALSE(c.is_valid());
+	EXPECT_TRUE(d.is_valid());
+	EXPECT_FALSE(e.is_valid());
+	EXPECT_TRUE(f.is_valid());
+}
+
+TEST(Constraints, Vector) {
+	std::vector<aut::in_range<0, 100, int>> vec = { 0, 10,4, 123 };
+
+	EXPECT_TRUE(vec[0].is_valid());
+	EXPECT_TRUE(vec[1].is_valid());
+	EXPECT_TRUE(vec[2].is_valid());
+	EXPECT_FALSE(vec[3].is_valid());
+}
+
+
+TEST(Constraints, Arithmetic) {
+
+	aut::less<100> a{ 11 };
+	aut::in_range<0, 10> b{ 2 };
+
+	auto c1 = a + b;
+	EXPECT_EQ(c1, 13);
+	auto c2 = 1 + a;
+	EXPECT_EQ(c2, 12);
+	auto c3 = a - b;
+	EXPECT_EQ(c3, 9);
+	auto c4 = 1 - a;
+	EXPECT_EQ(c4, -10);
+	auto c5 = a * b;
+	EXPECT_EQ(c5, 22);
+	auto c6 = 1 * a;
+	EXPECT_EQ(c6, 11);
+	auto c7 = a / b;
+	EXPECT_EQ(c7, 5);
+	auto c8 = 1 / a;
+	EXPECT_EQ(c8, 0);
+
+	c8++;
+	EXPECT_EQ(c8, 1);
+	c8--;
+	EXPECT_EQ(c8, 0);
+
+	assert(c8 < 5);
+	assert(c8 != 5);
+
+	c7 += b;
+	EXPECT_EQ(c7, 7);
+	c8 += 1;
+	EXPECT_EQ(c8, 1);
+	c8 -= b;
+	EXPECT_EQ(c8, -1);
+	c8 -= 1;
+	EXPECT_EQ(c8, -2);
+	c8 *= b;
+	EXPECT_EQ(c8, -4);
+	c8 *= 1;
+	EXPECT_EQ(c8, -4);
+	c8 /= b;
+	EXPECT_EQ(c8, -2);
+	c8 /= 1;
+	EXPECT_EQ(c8, -2);
+}
+
+TEST(Constraints, Arithmetic2) {
+	aut::less<100> a{ 11 };
+	aut::in_range<0, 10> b{ 2 };
+
+	auto c = a + b;
+	EXPECT_EQ(c, 13);
+}
+
+TEST(Constraints, FunctionCall) {
+	auto res = fib(10);
+
+	EXPECT_TRUE(res.is_valid());
+}
+
+TEST(Constraints, FunctionCall2) {
+	std::vector<aut::in_range<0, 100, int>> vec = { 0, 10,4, 123 };
+	std::vector<aut::in_range<0, 100, int>> exp = { 0, 4, 10, 123 };
+
+	BubbleSort(vec);
+
+	EXPECT_EQ(vec, exp);
+}
+TEST(Constraints, FunctionCall3) {
+	aut::in_range<0.f, 10.f> b{ 16.f };
+
+	auto res = sqrt(b);
+	EXPECT_FLOAT_EQ(res, 4.f);
+}
+
+TEST(ConstraintCombiner, And) {
+	aut::_and<aut::in_range<0.f, 10.f>, aut::one_of<1.f, 2.f, 10.f>> b{ 10.f };
+
+	EXPECT_TRUE(b.is_valid());
+}
+
+TEST(ConstraintCombiner, Or) {
+	aut::_or<aut::in_range<0.f, 10.f>, aut::one_of<100.f, 200.f>> c{ 100.f };
+
+	EXPECT_TRUE(c.is_valid());
+}
+
+TEST(ConstraintCombiner, Not) {
+	aut::_or<aut::in_range<0.f, 10.f>, aut::one_of<100.f, 200.f>> c{ 100.f };
+	aut::_not<decltype(c)> d{ 10.f };
+
+	EXPECT_TRUE(c.is_valid());
+	EXPECT_FALSE(d.is_valid());
+}
+
+TEST(ConstraintCombiner, FunctionCall) {
+	aut::_or<aut::in_range<0.f, 10.f>, aut::one_of<100.f, 200.f>> c{ 100.f };
+	auto res = sqrt(c);
+	EXPECT_FLOAT_EQ(res, 10.f);
+}
+
+
+TEST(Evaluation, Basic) {
 	{
-		aut::constraint_proxy s0{ 10.0 };
-		//std::cout << s0 << std::endl;
-	}
-
-	{
-		aut::in_range<0.f, 10.f> s1 = 5.f;
-		//std::cout << s1 << std::endl;
-	}
-
-	{
-		aut::in_range<0, 10> s2 = 1;
-		aut::in_range<0, 10> s3 = 3;
-	
-		auto res = s3 + s2;
-		assert(res == 4);
-		//std::cout << s2 << std::endl;
-		//std::cout << s3 << std::endl;
-		//std::cout << res << std::endl;
-	}
-
-	{
-		aut::in_range<0., 10.> s4{ 11.0 };
-	}
-
-	{
-		auto res = fib(10);
-	}
-
-	{
-		std::vector<aut::in_range<0, 100, int>> vec = { 0, 10,4, 123 };
-		std::vector<aut::in_range<0, 100, int>> exp = { 0, 4, 10, 123 };
-		BubbleSort(vec);
-		assert(vec == exp);
-	}
-
-	{
-		aut::in_range<0, 10> a{ 11 };
-		aut::less<10> b{ 2 };
-		aut::greater<10> c{ 2 };
-		aut::less_eq<10> d{ 2 };
-		aut::greater_eq<10> e{ 2 };
-		aut::one_of<0, 1, 54, 2> f{ 1 };
-		//std::cout << f << std::endl;
-	}
-
-	{
-		aut::less<100> a{ 11 };
-		aut::in_range<0, 10> b{ 2 };
-
-		auto c = a + b;
-		assert(c == 13);
-	}
-
-	{
-		aut::less<100> a{ 11 };
-		aut::in_range<0, 10> b{ 2 };
-
-		auto c1 = a + b;
-		assert(c1 == 13);
-		auto c2 = 1 + a;
-		assert(c2 == 12);
-		auto c3 = a - b;
-		assert(c3 == 9);
-		auto c4 = 1 - a;
-		assert(c4 == -10);
-		auto c5 = a * b;
-		assert(c5 == 22);
-		auto c6 = 1 * a;
-		assert(c6 == 11);
-		auto c7 = a / b;
-		assert(c7 == 5);
-		auto c8 = 1 / a;
-		assert(c8 == 0);
-
-		c8++;
-		assert(c8 == 1);
-		c8--;
-		assert(c8 == 0);
-
-		assert(c8 < 5);
-		assert(c8 != 5);
-
-		c7 += b;
-		assert(c7 == 7);
-		c8 += 1;
-		assert(c8 == 1);
-		c8 -= b;
-		assert(c8 == -1);
-		c8 -= 1;
-		assert(c8 == -2);
-		c8 *= b;
-		assert(c8 == -4);
-		c8 *= 1;
-		assert(c8 == -4);
-		c8 /= b;
-		assert(c8 == -2);
-		c8 /= 1;
-		assert(c8 == -2);
-
-	}
-
-	{
-		aut::in_range<0.f, 10.f> b{ 16.f };
-
-		auto res = sqrt(b);
-		assert(aut::float_equal(res, 4.f));
-	}
-
-	{
-		aut::_and<aut::in_range<0.f, 10.f>, aut::one_of<1.f, 2.f, 10.f>> b{ 16.f };
-		aut::_or<aut::in_range<0.f, 10.f>, aut::one_of<100.f, 200.f>> c{ 20 };
-		aut::_not<decltype(c)> d{ 10.f };
-
-		auto res = sqrt(b);
-		assert(aut::float_equal(res, 4.f));
-	}
-
-	{
-		aut::less<1> b{ 16 };
-		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
+		aut::less<1> a{ 16 };
+		constexpr auto bv = aut::evaluate<decltype(a)>::valid_border_values;
 		std::array<int, 1> exp = { 0 };
-		assert(bw == exp);
+		EXPECT_EQ(bv, exp);
 	}
 
 	{
 		aut::greater<1> b{ 16 };
-		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
+		constexpr auto bv = aut::evaluate<decltype(b)>::valid_border_values;
 		std::array<int, 1> exp = { 2 };
-		assert(bw == exp);
+		EXPECT_EQ(bv, exp);
 	}
 
 	{
 		aut::one_of<1, 5, 3> b{ 16 };
-		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
+		constexpr auto bv = aut::evaluate<decltype(b)>::valid_border_values;
 		std::array<int, 3> exp = { 1, 5, 3 };
-		assert(bw == exp);
+		EXPECT_EQ(bv, exp);
 	}
+}
 
+TEST(Evaluation, Combiner) {
 	{
 		aut::_and<aut::greater<1>, aut::one_of<-1, 1, 5, 3>> b{ 16 };
-		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
+		constexpr auto bv = aut::evaluate<decltype(b)>::valid_border_values;
 		std::array<int, 2> exp = { 5, 3 };
-		assert(bw == exp);
+		EXPECT_EQ(bv, exp);
 	}
 
 	{
 		aut::_or<aut::greater<1>, aut::one_of<-1, 1, 2, 5, 3>> b{ 16 };
-		constexpr auto bw = aut::evaluate<decltype(b)>::valid_border_values;
-		std::array<int, 5> exp = {2, -1, 1, 5, 3 };
-		assert(bw == exp);
+		constexpr auto bv = aut::evaluate<decltype(b)>::valid_border_values;
+		std::array<int, 5> exp = { 2, -1, 1, 5, 3 };
+		EXPECT_EQ(bv, exp);
 	}
-
-	{
-		aut::test_func<myFunc2>();
-	}
-
-	{
-		aut::measure_runtime([]() {return myFunc2(1, 2, 3); });
-		aut::measure_runtime([]() {return myFunc2_unconstrained(1, 2, 3); });
-	}
-	return 0;
 }
+
+
+TEST(TestGenerator, GlobalFunction) {
+	aut::test_func{myFunc};
+}
+
+TEST(TestGenerator, GlobalFunction2) {
+	aut::test_func{myFunc2, true};
+}
+
+TEST(TestGenerator, LambdaFunction) {
+	const auto lambda_func = [](aut::in_range<0, 10> a) -> aut::greater_eq<0> {
+		return (int)a;
+	};
+	aut::test_func{ lambda_func};
+}
+
+class TestClass {
+public:
+	static aut::greater_eq<0> static_member_func(aut::in_range<0, 10> a) {
+		return (int)a;
+	}
+	aut::greater_eq<0> my_member_func(aut::in_range<0, 10> a) {
+		return (int)a;
+	}
+};
+
+TEST(TestGenerator, MemberFunctionWrappedInLambda) {
+	TestClass tc{};
+	auto l = [&tc](aut::in_range<0, 10> a) {return tc.my_member_func(a); };
+	aut::test_func{ l};
+}
+TEST(TestGenerator, StaticMemberFunction) {
+	aut::test_func{ TestClass::static_member_func};
+}
+
+//TEST(TestGenerator, Runtime) {
+//	aut::measure_runtime([]() {return myFunc2(1, 2, 3); });
+//	aut::measure_runtime([]() {return myFunc2_unconstrained(1, 2, 3); });
+//}
